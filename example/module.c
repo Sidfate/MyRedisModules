@@ -4,14 +4,58 @@
 #include "../rmutil/test_util.h"
 
 /*
+* Create a random uuid
+*
+*/
+char *random_uuid(char buf[37])
+{
+  const char *c = "89ab";
+  char *p = buf;
+  int n;
+
+  for (n = 0; n < 16; ++n) {
+    int b = rand() % 255;
+
+    switch (n) {
+    case 6:
+      sprintf(p, "4%x", b % 15);
+      break;
+    case 8:
+      sprintf(p, "%c%x", c[rand() % strlen(c)],b % 15);
+      break;
+    default:
+      sprintf(p, "%02x", b);
+      break;
+    }
+
+    p += 2;
+
+    switch (n) {
+    case 3:
+    case 5:
+    case 7:
+    case 9:
+      *p++ = '-';
+      break;
+    }
+  }
+
+  *p = 0;
+
+  return buf;
+}
+
+/*
 * MY.LDEL <key> <index>
 *
 * Delete list element by the index
 */
-int LDELCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+int LDELCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc)
+{
 
   // we need EXACTLY 3 arguments
-  if (argc != 3) {
+  if (argc != 3)
+  {
     return RedisModule_WrongArity(ctx);
   }
   RedisModule_AutoMemory(ctx);
@@ -20,18 +64,21 @@ int LDELCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   RedisModuleKey *key =
       RedisModule_OpenKey(ctx, argv[1], REDISMODULE_READ | REDISMODULE_WRITE);
   if (RedisModule_KeyType(key) != REDISMODULE_KEYTYPE_LIST &&
-      RedisModule_KeyType(key) != REDISMODULE_KEYTYPE_EMPTY) {
+      RedisModule_KeyType(key) != REDISMODULE_KEYTYPE_EMPTY)
+  {
     return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);
   }
 
+  char guid[37];
+  random_uuid(guid);
   // get the current value of the hash element
   RedisModuleCallReply *rep =
-      RedisModule_Call(ctx, "LSET", "ssc", argv[1], argv[2], "xxx");
+      RedisModule_Call(ctx, "LSET", "ssc", argv[1], argv[2], guid);
   RMUTIL_ASSERT_NOERROR(ctx, rep);
 
   // set the new value of the element
   RedisModuleCallReply *srep =
-      RedisModule_Call(ctx, "LREM", "scc", argv[1], "0", "xxx");
+      RedisModule_Call(ctx, "LREM", "scc", argv[1], "0", guid);
   RMUTIL_ASSERT_NOERROR(ctx, srep);
 
   // forward the HGET reply to the client
@@ -46,10 +93,12 @@ int LDELCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
 *
 * Basically atomic HGET + HSET
 */
-int HGetSetCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+int HGetSetCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc)
+{
 
   // we need EXACTLY 4 arguments
-  if (argc != 4) {
+  if (argc != 4)
+  {
     return RedisModule_WrongArity(ctx);
   }
   RedisModule_AutoMemory(ctx);
@@ -58,7 +107,8 @@ int HGetSetCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   RedisModuleKey *key =
       RedisModule_OpenKey(ctx, argv[1], REDISMODULE_READ | REDISMODULE_WRITE);
   if (RedisModule_KeyType(key) != REDISMODULE_KEYTYPE_HASH &&
-      RedisModule_KeyType(key) != REDISMODULE_KEYTYPE_EMPTY) {
+      RedisModule_KeyType(key) != REDISMODULE_KEYTYPE_EMPTY)
+  {
     return RedisModule_ReplyWithError(ctx, REDISMODULE_ERRORMSG_WRONGTYPE);
   }
 
@@ -73,7 +123,8 @@ int HGetSetCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   RMUTIL_ASSERT_NOERROR(ctx, srep);
 
   // if the value was null before - we just return null
-  if (RedisModule_CallReplyType(rep) == REDISMODULE_REPLY_NULL) {
+  if (RedisModule_CallReplyType(rep) == REDISMODULE_REPLY_NULL)
+  {
     RedisModule_ReplyWithNull(ctx);
     return REDISMODULE_OK;
   }
@@ -84,7 +135,8 @@ int HGetSetCommand(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
 }
 
 // Test the the LDEL command
-int testLdel(RedisModuleCtx *ctx) {
+int testLdel(RedisModuleCtx *ctx)
+{
   RedisModuleCallReply *r =
       RedisModule_Call(ctx, "rpush", "mylist", "test1");
   r = RedisModule_Call(ctx, "rpush", "mylist", "test2");
@@ -98,7 +150,8 @@ int testLdel(RedisModuleCtx *ctx) {
 }
 
 // test the HGETSET command
-int testHgetSet(RedisModuleCtx *ctx) {
+int testHgetSet(RedisModuleCtx *ctx)
+{
   RedisModuleCallReply *r =
       RedisModule_Call(ctx, "my.hgetset", "ccc", "foo", "bar", "baz");
   RMUtil_Assert(RedisModule_CallReplyType(r) != REDISMODULE_REPLY_ERROR);
@@ -112,7 +165,8 @@ int testHgetSet(RedisModuleCtx *ctx) {
 }
 
 // Unit test entry point for the module
-int TestModule(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
+int TestModule(RedisModuleCtx *ctx, RedisModuleString **argv, int argc)
+{
   RedisModule_AutoMemory(ctx);
 
   RMUtil_Test(testLdel);
@@ -122,10 +176,12 @@ int TestModule(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) {
   return REDISMODULE_OK;
 }
 
-int RedisModule_OnLoad(RedisModuleCtx *ctx) {
+int RedisModule_OnLoad(RedisModuleCtx *ctx)
+{
 
   if (RedisModule_Init(ctx, "my", 1, REDISMODULE_APIVER_1) ==
-      REDISMODULE_ERR) {
+      REDISMODULE_ERR)
+  {
     return REDISMODULE_ERR;
   }
 
