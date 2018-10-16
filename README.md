@@ -1,4 +1,4 @@
-### MyRedisModules
+# MyRedisModules
 
 > This repository is forked from [RedisModulesSDK](https://github.com/RedisLabs/RedisModulesSDK).
 
@@ -45,12 +45,12 @@ PASS
 
     Atomically set a value in a HASH key to <value> and return its value before the HSET.
 
-    Usage: 
+    **Usage**: 
     ```
     MY.HGETSET <key> <element> <value>
     ```
 
-    Test: 
+    **Test**: 
     ```shell
     $ redis-cli
     127.0.0.1:6379> MY.HGETSET foo bar baz
@@ -71,12 +71,12 @@ PASS
 
     Delete list element by the index
 
-    Usage:
+    **Usage**:
     ```
     MY.LDEL <key> <index>
     ```
 
-    Test: 
+    **Test**: 
     ```shell
     $ redis-cli
     127.0.0.1:6379> RPUSH mylist "test1"
