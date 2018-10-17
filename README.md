@@ -57,14 +57,6 @@ PASS
     (nil)
     127.0.0.1:6379> MY.HGETSET foo bar vaz
     "baz"
-    127.0.0.1:6379> RPUSH mylist "test1"
-    (integer) 1
-    127.0.0.1:6379> RPUSH mylist "test2"
-    (integer) 10
-    127.0.0.1:6379> RPUSH mylist "test2"
-    (integer) 10
-    127.0.0.1:6379> MY.TEST
-    PASS
     ```
 
 2. MY.LDEL
