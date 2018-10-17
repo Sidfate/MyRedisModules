@@ -83,17 +83,17 @@ PASS
     (integer) 1
     127.0.0.1:6379> RPUSH mylist "test2"
     (integer) 2
-    127.0.0.1:6379> RPUSH mylist "test2"
+    127.0.0.1:6379> RPUSH mylist "test1"
     (integer) 3
     127.0.0.1:6379> LRANGE mylist 0 -1
     1) "test1"
     2) "test2"
-    3) "test3"
+    3) "test1"
     127.0.0.1:6379> MY.LDEL mylist 0
     OK
     127.0.0.1:6379> LRANGE mylist 0 -1
     1) "test2"
-    2) "test3"
+    2) "test1"
     ```
 
 
